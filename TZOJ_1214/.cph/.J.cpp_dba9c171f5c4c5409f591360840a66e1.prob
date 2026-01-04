@@ -1,1 +1,0 @@
-{"name":"Local: J","url":"c:\\Users\\HP07\\Desktop\\BaiduSyncdisk\\00_Workbench\\02_Training\\J.cpp","tests":[{"id":1765693146656,"input":"4 4\n1 2 100\n2 4 200\n2 3 250\n3 4 100","output":"450"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"c:\\Users\\HP07\\Desktop\\BaiduSyncdisk\\00_Workbench\\02_Training\\J.cpp","group":"local","local":true}
