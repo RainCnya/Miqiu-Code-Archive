@@ -6,7 +6,7 @@ const int maxn = 105;
 int a[maxn];
 int n;
 
-int main()
+int main( )
 {	
     int t;
     cin >> t;

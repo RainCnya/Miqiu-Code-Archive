@@ -1,30 +1,31 @@
 #include <bits/stdc++.h>
 using namespace std;
+using ll = long long;
 
 const int maxn = 2e5 + 50;
 
-long long a[maxn];
-long long k, x, cnt;
+ll a[maxn];
+ll k, x, cnt;
 int n;
 
-void print( long long l, long long r )
+void print( ll l, ll r )
 {
-    for( long long p = l; p <= r && cnt < k; ++ p )
+    for( ll pos = l; pos <= r && cnt < k; ++ pos )
     {
-        cout << p << " ";
+        cout << pos << " ";
         cnt ++;
     }
 }
 
-bool check( long long mid )
+bool check( ll mid )
 {
-    long long tcnt = 0;
+    ll tcnt = 0;
     
     if( a[1] >= mid ) tcnt += a[1] - mid + 1;
     
     for( int i = 1; i < n; ++ i )
     {
-        long long diff = a[i + 1] - a[i];
+        ll diff = a[i + 1] - a[i];
         if( diff >= mid * 2 )
             tcnt += diff - 2 * mid + 1 ;
     }
@@ -44,12 +45,12 @@ void solve( )
     }
     sort( a + 1, a + n + 1 );
 
-    long long l = 0, r = x + 1;
-    long long ans = 0;
+    ll l = 0, r = x + 1;
+    ll ans = 0;
 
     while( l <= r )  
     {
-        long long mid = ( l + r ) >> 1;
+        ll mid = ( l + r ) >> 1;
         if( check( mid ) ) ans = mid, l = mid + 1;
         else r = mid - 1;
     }
@@ -66,8 +67,8 @@ void solve( )
     
     for( int i = 1; i < n; ++ i )
     {
-        long long st = a[i] + ans;
-        long long ed = a[i+1] - ans;
+        ll st = a[i] + ans;
+        ll ed = a[i+1] - ans;
         if( st <= ed ) print( st, ed );
     }
 
