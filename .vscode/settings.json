@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "text_encoding": "cpp",
+        "thread": "cpp",
+        "random": "cpp",
+        "iostream": "cpp",
+        "barrier": "cpp",
+        "algorithm": "cpp",
+        "format": "cpp",
+        "regex": "cpp",
+        "variant": "cpp",
+        "exception": "cpp",
+        "generator": "cpp",
+        "memory_resource": "cpp",
+        "stack": "cpp",
+        "iosfwd": "cpp",
+        "bitset": "cpp"
+    }
+}
