@@ -1,14 +1,15 @@
 #include<bits/stdc++.h>
 using namespace std;
+using ll = long long;
 
 const int maxn = 2000 + 50;
 const int maxp = 2000 + 50;
-const long long linf = 1e18;
+const ll linf = 1e18;
 
 int T, MaxP, W;
 int ap[maxn], bp[maxn];
 int as[maxn], bs[maxn];
-long long dp[maxp][maxp];
+ll dp[maxp][maxp];
 
 int main( )
 {	
@@ -67,7 +68,7 @@ int main( )
         }
     }
 
-    long long ans = 0;
+    ll ans = 0;
     for( int i = 0; i <= MaxP; ++ i )
         ans = max( ans, dp[T][i] );
     
