@@ -4,16 +4,13 @@ using namespace std;
 const int maxn = 5e4 + 50;
 
 int a[maxn];
-int pre[maxn];
-int post[maxn];
-int n, k;
-int l, r;
+int pre[maxn], suf[maxn];
+int n, k, l, r;
 
-int main() {
+int main( ) 
+{
     cin >> n >> k;
-    for( int i = 1; i <= n; ++ i ) {
-        cin >> a[i];
-    }
+    for( int i = 1; i <= n; ++ i ) cin >> a[i];
 
     sort( a + 1, a + n + 1 );
 
@@ -29,14 +26,14 @@ int main() {
     while( l >= 1 )
     {
         while( a[r] - a[l] > k && l <= r ) r --;
-        post[l] = max( post[l + 1], r - l + 1 );
+        suf[l] = max( suf[l + 1], r - l + 1 );
         l --;
     }
 
     int ans = 0;
     for( int i = 1; i < n; ++ i )
     {
-        ans = max( ans, pre[i] + post[i + 1] );
+        ans = max( ans, pre[i] + suf[i + 1] );
     }
 
     cout << ans << '\n';

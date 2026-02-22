@@ -20,6 +20,10 @@
         "list": "cpp",
         "vector": "cpp",
         "string_view": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "any": "cpp",
+        "mutex": "cpp",
+        "streambuf": "cpp",
+        "functional": "cpp"
     }
 }
