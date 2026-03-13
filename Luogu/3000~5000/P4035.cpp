@@ -68,7 +68,10 @@ int main( )
     gauss( );
 
     for( int i = 1; i <= n; ++ i )
-        cout << fixed << setprecision( 3 ) << c[i][n+1] << ' ';
+    {
+        cout << fixed << setprecision( 3 ) << c[i][n+1];
+        if( i != n ) cout << " ";
+    }
 
     return 0;
 }

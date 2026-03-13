@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "iosfwd": "cpp",
+        "iostream": "cpp",
+        "barrier": "cpp",
+        "bitset": "cpp",
+        "memory_resource": "cpp"
+    }
+}
