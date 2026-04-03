@@ -1,0 +1,1072 @@
+1. 存储结构的选择
+
+顺序存储：核心在于利用内存的连续性实现 O(1) 的随机访问。重点在于理解并处理插入和删除操作时因元素平移带来的 O(n) 复杂度，以及动态内存分配的管理。
+链式存储：核心在于指针的灵活性。通过引入虚拟头节点，统一了首元节点与普通节点的处理逻辑，有效简化了边界条件的判断。
+
+2. 线性表变体
+循环链表：在 1006 和 1012 题中应用。通过将尾节点指向头节点，实现了数据的循环访问。难点在于遍历终止条件的判定。
+静态链表：1010 题通过数组模拟指针。这种结构在不支持指针的语言环境下非常实用，通过手动维护备用链表来模拟系统的内存管理。
+
+
+线性表是逻辑上的概念，而顺序表和链表是两种截然不同的实现方式。在程序设计中，应根据具体的需求来权衡数据结构的选择。
+在实现链表时，尤其是在执行删除、逆置等改变指针指向的操作时，必须先暂存后续节点的地址，否则会导致断链或内存泄漏。
+注意边界条件的判定：顺序表的数组下标越界，链表尾部的 NULL 指针判定。
+
+
+<p>
+    			
+</p>
+<h3>
+    1. 顺序表操作 (1001)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：利用连续内存空间实现线性结构，支持增删改查及逆置。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：插入与删除操作涉及元素的大规模平移，时间复杂度为
+            <math-inline data-math="O(n)">
+                O(n)
+            </math-inline>。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int maxn = 200 + 10;
+
+typedef int Elemtype;
+typedef struct {
+    Elemtype *data;
+    int length;
+} SeqList;
+
+void CreateSeqList( SeqList &amp;L )
+{
+    L.data = (Elemtype *)malloc(sizeof(Elemtype) * maxn);
+    L.length = 0;
+}
+
+void InitSeqList( SeqList &amp;L )
+{
+    cin &gt;&gt; L.length;
+    for( int i = 0; i &lt; L.length; ++ i ) cin &gt;&gt; L.data[i];
+}
+
+void InsertSeqList( SeqList &amp;L, int pos, Elemtype x )
+{
+    if( pos &lt; 0 || pos &gt; L.length ) return;
+    for( int i = L.length; i &gt;= pos + 1; -- i ) L.data[i] = L.data[i - 1];
+    L.data[pos] = x;
+    L.length++;
+}
+
+void DeleteSeqList( SeqList &amp;L, int pos )
+{
+    if( pos &lt; 0 || pos &gt;= L.length ) return;
+    for( int i = pos; i &lt; L.length - 1; ++ i ) L.data[i] = L.data[i + 1];
+    L.length--;
+}
+
+void GetElemInSeqList( SeqList &amp;L, int pos, Elemtype &amp;x )
+{
+    if( pos &lt; 0 || pos &gt;= L.length ) return;
+    x = L.data[pos];
+}
+
+int FindInSeqList( SeqList &amp;L, Elemtype x )
+{
+    for( int i = 0; i &lt; L.length; ++ i )
+        if( L.data[i] == x ) return i;
+    return -1;
+}
+
+void ReverseSeqList( SeqList &amp;L )
+{
+    for( int i = 0; i &lt; L.length / 2; ++ i )
+        swap( L.data[i], L.data[L.length - 1 - i] );
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    2. 链表操作 (1002)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：实现带头节点的单链表基本维护功能，包括插入、删除、查找、更新及逆置。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：通过头节点统一边界处理。逆置操作采用头插法原地重建，时间复杂度为
+            <math-inline data-math="O(n)">
+                O(n)
+            </math-inline>。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+typedef int Elemtype;
+typedef struct node {
+    Elemtype data;
+    struct node *next;
+} Node;
+
+void Insert( Node* head, int pos, Elemtype x )
+{
+    Node* p = head;
+    int i;
+    for( i = 0; i &lt; pos - 1; ++ i ) p = p-&gt;next;
+    Node* q = (Node*)malloc(sizeof(Node));
+    q-&gt;data = x;
+    q-&gt;next = p-&gt;next;
+    p-&gt;next = q;
+}
+
+void Delete( Node* head, int pos )
+{
+    Node* p = head;
+    int i;
+    for( i = 0; i &lt; pos - 1; ++ i ) p = p-&gt;next;
+    p-&gt;next = p-&gt;next-&gt;next;
+}
+
+int Find( Node* head, Elemtype x )
+{
+    Node* p = head;
+    int pos = 0;
+    while( p-&gt;next != NULL )
+    {
+        p = p-&gt;next;
+        if( p-&gt;data == x ) return pos + 1;
+        pos ++;
+    }
+    return -1;
+}
+
+void Update( Node* head, int pos, Elemtype x )
+{
+    Node* p = head;
+    int i;
+    for( i = 1; i &lt; pos; ++ i ) p = p-&gt;next;
+    p-&gt;next-&gt;data = x;
+}
+
+void Reverse( Node* head )
+{
+    Node* p = head-&gt;next;
+    head-&gt;next = NULL;
+    while( p != NULL )
+    {
+        Node* q = p-&gt;next;
+        p-&gt;next = head-&gt;next;
+        head-&gt;next = p;
+        p = q;
+    }
+}</pre>
+<p>
+    <br/>
+</p>
+<h3></h3>
+<h3 style="text-wrap-mode: wrap;">
+    3. 创建单链表 (1003)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：根据输入顺序动态分配节点，构建不带头节点的单链表。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：需单独处理首节点分配。使用尾指针维护链表增长，创建效率为
+            <math-inline data-math="O(n)">
+                O(n)
+            </math-inline>。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Node {
+    int data;
+    struct Node *next;
+};
+
+Node *CreateLinkList(int n)
+{
+    Node *head = NULL, *tail = NULL;
+    for(int i = 1; i &lt;= n; ++ i)
+    {
+        Node *q = (Node *)malloc(sizeof(Node));
+        cin &gt;&gt; q-&gt;data;
+        q-&gt;next = NULL;
+        if( head == NULL ) head = tail = q;
+        else tail-&gt;next = q, tail = q;
+    }
+    return head;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    4. 单链表元素插入 (1004)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：实现带头节点的链表，并在创建过程中使用头插法插入新元素。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：新元素始终插入在头节点之后，最终形成的链表顺序与输入顺序相反。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Node {
+    int data;
+    Node *next;
+};
+
+void CreateHeader( Node **head )
+{
+    *head = (Node *)malloc( sizeof( Node ) );
+    (*head)-&gt;next = NULL;
+}
+
+void Insert( Node *head, int d )
+{
+    Node *cur = new Node( );
+    cur-&gt;data = d;
+    cur-&gt;next = head-&gt;next;
+    head-&gt;next = cur;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3 style="text-wrap-mode: wrap;">
+    5. 删除链表元素 (1005)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：在单链表中搜索特定值的节点，并将其从链表中移除并释放空间。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：查找函数返回目标节点的前驱指针，简化删除逻辑，时间复杂度为
+            <math-inline data-math="O(n)">
+                O(n)
+            </math-inline>。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Node {
+    int data;
+    Node *next;
+};
+
+Node* CreateLinkList( int n )
+{
+    Node *head = new Node( );
+    head-&gt;next = NULL;
+    Node *tail = head;
+    for( int i = 1; i &lt;= n; ++ i )
+    {
+        Node *cur = new Node( );
+        cin &gt;&gt; cur-&gt;data;
+        cur-&gt;next = NULL;
+        tail-&gt;next = cur;
+        tail = cur;
+    }
+    return head;
+}
+
+Node *Find( Node *head, int x )
+{
+    Node *cur = head;
+    while( cur-&gt;next != NULL &amp;&amp; cur-&gt;next-&gt;data != x ) cur = cur-&gt;next;
+    return cur;
+}
+
+void Delete( Node *p )
+{
+    Node *tar = p-&gt;next;
+    p-&gt;next = tar-&gt;next;
+    delete tar;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    6. 循环单链表 (1006)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：构建循环单链表，并实现从任意指定节点开始的全周遍历输出。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：尾节点指向头节点形成闭环。遍历条件需判定是否回到起始节点。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int data;
+    struct Node *next;
+} Node;
+
+Node* CreateLinkList( int n )
+{
+    Node *head = (Node *)malloc(sizeof(Node));
+    head-&gt;next = head;
+    Node *tail = head;
+
+    int i;
+    for( i = 1; i &lt;= n; ++ i )
+    {
+        Node *cur = (Node *)malloc(sizeof(Node));
+        scanf( &quot;%d&quot;, &amp;cur-&gt;data );
+        cur-&gt;next = head;
+        tail-&gt;next = cur;
+        tail = cur;
+    }
+    return head;
+}
+
+// 循环输出链表
+void PrintLinkList( Node *head, int x )
+{
+    Node *st = head-&gt;next;
+    while( st != head &amp;&amp; st-&gt;data != x ) st = st-&gt;next;
+
+    Node *p = st;
+    while( 1 )
+    {
+        if( p != head )
+        {
+            printf(&quot;%d&quot;, p-&gt;data);
+            if( p-&gt;next != st ) printf(&quot; &quot;);
+        }
+        p = p-&gt;next;
+        if( p == st ) break;
+    }
+    printf(&quot;\n&quot;);
+}
+
+void Destroy(Node* head)
+{
+    Node *p;
+    while(head-&gt;next!=head)
+    {
+        p = head-&gt;next;
+        head-&gt;next = p-&gt;next;
+        free(p);
+    }
+    free(head);
+}
+
+int main()
+{
+    int n, x;
+    scanf(&quot;%d&quot;, &amp;n);
+    Node *head = CreateLinkList(n);
+    while(scanf(&quot;%d&quot;, &amp;x)!=EOF)
+    {
+        PrintLinkList(head, x);
+    }
+    Destroy(head);
+    return 0;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    7. 线性表插入删除 (1007)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：支持在指定位置进行连续多个元素的批量插入与批量删除操作。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：偷懒直接采用 C++ STL 的 vector 容器处理。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+int n, p;
+
+void solve( )
+{
+    cin &gt;&gt; n;
+    vector&lt; int &gt; list;
+    for( int i = 1; i &lt;= n; ++ i )
+    {
+        int val; cin &gt;&gt; val;
+        list.push_back( val );
+    }
+
+    cin &gt;&gt; p;
+    for( int i = 1; i &lt;= p; ++ i )
+    {
+        string s;
+        cin &gt;&gt; s;
+        if( s == &quot;insert&quot; )
+        {
+            int pos, m; cin &gt;&gt; pos &gt;&gt; m;
+            vector&lt; int &gt; tmp( m );
+            for( int j = 0; j &lt; m; ++ j ) cin &gt;&gt; tmp[j];
+            int idx = max( 0, pos - 1 );
+            list.insert( list.begin( ) + idx, tmp.begin( ), tmp.end( ) );
+        }
+        else if( s == &quot;delete&quot; )
+        {
+            int pos, m; cin &gt;&gt; pos &gt;&gt; m;
+            if( list.empty( ) ) continue;
+            int idx = pos - 1;
+            int mm = min( m, (int)list.size( ) - idx );
+            list.erase( list.begin( ) + idx, list.begin( ) + idx + mm );
+        }
+    }
+    for( int i = 0; i &lt; list.size( ); ++ i )
+    {
+        if( i ) cout &lt;&lt; &quot; &quot;;
+        cout &lt;&lt; list[i];
+    }
+    cout &lt;&lt; &quot;\n&quot;;
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    int _t = 1; cin &gt;&gt; _t;
+    while( _t -- ) solve( );
+    return 0;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    8. 仓库管理 (1008)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：维护按价格升序排列的单链表，支持重复价格的库存累加。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：插入前需先查找定位。若价格存在则累加数量，否则保持链表有序性进行插入。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">void Add( Node* head, int m, int x )
+{
+    Node* p = head;
+    while( p-&gt;next != NULL &amp;&amp; p-&gt;next-&gt;cost &lt; x ) p = p-&gt;next;
+    if( p-&gt;next != NULL &amp;&amp; p-&gt;next-&gt;cost == x ) p-&gt;next-&gt;num += m;
+    else {
+        Node* t = ( Node* )malloc( sizeof( Node ) );
+        t-&gt;num = m;
+        t-&gt;cost = x;
+        t-&gt;next = p-&gt;next;
+        p-&gt;next = t;
+    }
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    9. 一元多项式相加 (1009)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：利用有序链表实现两个多项式的求和运算。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：其实就是合并两个顺序表，特判系数为 0 的情况，时间复杂度为
+            <math-inline data-math="O(n+m)">
+                O(n+m)
+            </math-inline>。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">Node* Add (Node* hA, Node* hB )
+{
+    Node* hC = ( Node* )malloc( sizeof( Node ) );
+    hC-&gt;next = NULL;
+    Node* pc = hC;
+
+    Node* pa = hA-&gt;next;
+    Node* pb = hB-&gt;next;
+
+    while( !(pa == NULL &amp;&amp; pb == NULL) )
+    {
+        Node* t = ( Node* )malloc( sizeof( Node ) );
+        t-&gt;next = NULL;
+
+        if( pa != NULL &amp;&amp; (pb == NULL || pa-&gt;exp &lt; pb-&gt;exp) )
+        {
+            t-&gt;coef = pa-&gt;coef;
+            t-&gt;exp = pa-&gt;exp;
+            pa = pa-&gt;next;
+        }
+        else if( pb != NULL &amp;&amp; (pa == NULL || pb-&gt;exp &lt; pa-&gt;exp) )
+        {
+            t-&gt;coef = pb-&gt;coef;
+            t-&gt;exp = pb-&gt;exp;
+            pb = pb-&gt;next;
+        }
+        else 
+        {
+            int sum = pa-&gt;coef + pb-&gt;coef;
+            if( sum == 0 )
+            {
+                free( t );
+                pa = pa-&gt;next;
+                pb = pb-&gt;next;
+                continue;
+            }
+            t-&gt;coef = sum;
+            t-&gt;exp = pa-&gt;exp;
+            pa = pa-&gt;next;
+            pb = pb-&gt;next;
+        }
+        pc-&gt;next = t;
+        pc = t;
+    }
+    return hC;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    10. 静态链表 (1010)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：在数组中利用游标模拟指针，手动实现存储管理。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：通过维护备用链表实现空间分配与回收，是链式前向星等结构的基础。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+typedef struct Node {
+    int data;
+    int cur;
+} Node;
+
+const int maxSize = 100;
+// Node a[maxSize];
+
+int Alloc( Node a[] )
+{
+    int p = a[0].cur;
+    if( p == 0 ) return -1;
+    a[0].cur = a[p].cur;
+    return p;
+}
+
+int Init( Node a[ ] )
+{
+    int n, i;
+    scanf(&quot;%d&quot;, &amp;n);
+    int head = Alloc( a ), pre = head;
+    a[head].data = 0;
+    a[head].cur = 0;
+    for( i = 0; i &lt; n; ++ i )
+    {
+        int p = Alloc( a );
+        scanf(&quot;%d&quot;, &amp;a[p].data);
+        a[p].cur = 0;
+        a[pre].cur = p;
+        pre = p;
+    }
+    return head;
+}
+
+int Find( Node a[], int head, int pos )
+{
+    int p = head, i;
+    for( i = 1; i &lt;= pos; ++ i )
+    {
+        p = a[p].cur;
+        if( p == 0 ) return -1;
+    }
+    return p;
+}
+
+void Insert( Node a[], int head, int pos, int x )
+{
+    int p = Find( a, head, pos - 1 );
+    if( p == -1 ) return ;
+    int q = Alloc( a );
+    a[q].data = x;
+    a[q].cur = a[p].cur;
+    a[p].cur = q;
+}
+
+void Delete( Node a[], int head, int x )
+{
+    int temp = a[head].cur;
+    if( temp == 0 ) { printf(&quot;Error\n&quot;); return ; }
+
+    while( a[temp].data != x )
+    {
+        temp = a[temp].cur;
+        if( temp == 0 ) { printf(&quot;Error\n&quot;); return ; }
+    }
+    int del = temp;
+    temp = head;
+    while( a[temp].cur != del ) temp = a[temp].cur;
+
+    a[temp].cur = a[del].cur;
+    a[del].cur = a[0].cur;
+    a[0].cur = del;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    11. 插入字符 (1011)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：在动态分配内存的顺序表头部连续插入字符元素。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：每次插入需重新分配内存并将数据整体平移，体现了顺序存储在头端操作的高开销。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct {
+    char *data;
+    int length;
+}SeqList;
+
+void CreateSeqList( SeqList &amp;lst, char s[] )
+{
+    lst.length = strlen( s );
+    lst.data = ( char* )malloc( sizeof( char ) * lst.length );
+    for( int i = 0; i &lt; lst.length; i ++ ) lst.data[i] = s[i];
+}
+
+void Insert( SeqList &amp;lst, char c )
+{
+    char *old = lst.data;
+    int len = lst.length + 1;
+    lst.data = ( char* )malloc( sizeof( char ) * len );
+    lst.data[0] = c;
+    for( int i = 0; i &lt; lst.length; i ++ ) lst.data[i+1] = old[i];
+    lst.length = len;
+    free( old );
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    12. 约瑟夫环问题 (1012)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：利用循环链表模拟。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：模拟指针移动定位节点。删除节点后需返回新的起始点，时间复杂度为
+            <math-inline data-math="O(n \times m)">
+                O(n x m)
+            </math-inline>。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">typedef struct node {
+    int id;
+    struct node* next;
+}Node;
+
+Node* DeleteOne( Node *head, int m )
+{
+    Node* p = head;
+    Node* pre = NULL;
+    int i;
+    for( i = 1; i &lt;= m - 1; ++ i ) {
+        pre = p;
+        p = p-&gt;next;
+    }
+    printf(&quot;%d\n&quot;, p-&gt;id);
+    pre-&gt;next = p-&gt;next;
+    free( p );
+    return pre-&gt;next;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    13. 合并表 (1013)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：将两个有序线性表合并为一个新的有序表。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：利用双指针归并策略。时间复杂度为
+            <math-inline data-math="O(n+m)">
+                O(n+m)
+            </math-inline>，同样采取 Vector 逃课。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+int n, m;
+
+void solve( )
+{
+    cin &gt;&gt; n;
+    vector&lt; int &gt; va( n );
+    for( int i = 0; i &lt; n; ++ i ) cin &gt;&gt; va[i];
+
+    cin &gt;&gt; m;
+    vector&lt; int &gt; vb( m );
+    for( int i = 0; i &lt; m; ++ i ) cin &gt;&gt; vb[i];
+
+    vector&lt; int &gt; vc( n + m );
+    int pa = 0, pb = 0, pc = 0;
+    while( pa &lt; n &amp;&amp; pb &lt; m ) {
+        if( va[pa] &lt; vb[pb] ) vc[pc ++] = va[pa ++];
+        else vc[pc ++] = vb[pb ++];
+    }
+
+    while( pa &lt; n ) vc[pc ++] = va[pa ++];
+
+    while( pb &lt; m ) vc[pc ++] = vb[pb ++];
+
+    cout &lt;&lt; vc.size( ) &lt;&lt; &#39; &#39;;
+    for( int i = 0; i &lt; vc.size(); ++ i )
+    {
+        if( i ) cout &lt;&lt; &quot; &quot;;
+        cout &lt;&lt; vc[i];
+    }
+    cout &lt;&lt; &#39;\n&#39;;
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    int _t = 1; cin &gt;&gt; _t;
+    while( _t -- ) solve( );
+    return 0;
+}</pre>
+<p>
+    <br/>
+</p>
+<h3>
+    14. 一元多项式求和 (1014)
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            思路：在指数范围较小时，利用数组下标作为桶进行项的系数累加。
+        </p>
+    </li>
+    <li>
+        <p>
+            要点：同样偷跑采用桶排序的技巧，效率高。需处理多项式项的精度及输出格式。
+        </p>
+    </li>
+</ul>
+<p>
+    <br/>
+</p>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 20 + 5;
+
+int n, m;
+double a[maxn];
+
+bool first = 1;
+
+void solve( )
+{
+    if( first ) first = 0;
+    else cout &lt;&lt; &#39;\n&#39;;
+    for( int i = 1; i &lt; maxn; ++ i ) a[i] = 0;
+    int maxexp = -1;
+    cin &gt;&gt; m;
+    for( int i = 1; i &lt;= m; ++ i )
+    {
+        double cof; int exp;
+        cin &gt;&gt; cof &gt;&gt; exp;
+        a[exp] += cof;
+        maxexp = max( exp, maxexp );
+    }
+    cin &gt;&gt; n;
+    for( int i = 1; i &lt;= n; ++ i )
+    {
+        double cof; int exp;
+        cin &gt;&gt; cof &gt;&gt; exp;
+        a[exp] += cof;
+        maxexp = max( exp, maxexp );
+    }
+    for( int i = 1; i &lt;= maxexp; ++ i )
+    {
+        if( a[i] ) cout &lt;&lt; fixed &lt;&lt; setprecision( 2 ) &lt;&lt; a[i] &lt;&lt; &quot; &quot; &lt;&lt; i &lt;&lt; &#39;\n&#39;;
+    }
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    int _t = 1; cin &gt;&gt; _t;
+    while( _t -- ) solve( );
+    return 0;
+}</pre>
+<h3>
+    个人顺序表模板
+</h3>
+<pre class="brush:cpp;toolbar:false">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// 1. 顺序表 (SeqList)
+const int MAXN = 200 + 10;
+typedef int Elemtype;
+
+typedef struct {
+    Elemtype *data;
+    int length;
+} SeqList;
+
+void CreateSeqList( SeqList &amp;L )
+{
+    L.data = ( Elemtype * )malloc( sizeof( Elemtype ) * MAXN );
+    L.length = 0;
+}
+
+void InitSeqList( SeqList &amp;L )
+{
+    cin &gt;&gt; L.length;
+    for( int i = 0; i &lt; L.length; ++ i ) cin &gt;&gt; L.data[i];
+}
+
+void InsertSeqList( SeqList &amp;L, int pos, Elemtype x )
+{
+    if( pos &lt; 0 || pos &gt; L.length ) return;
+    for( int i = L.length; i &gt;= pos + 1; -- i ) L.data[i] = L.data[i - 1];
+    L.data[pos] = x;
+    L.length++;
+}
+
+void DeleteSeqList( SeqList &amp;L, int pos )
+{
+    if( pos &lt; 0 || pos &gt;= L.length ) return;
+    for( int i = pos; i &lt; L.length - 1; ++ i ) L.data[i] = L.data[i + 1];
+    L.length--;
+}
+
+void ReverseSeqList( SeqList &amp;L )
+{
+    for( int i = 0; i &lt; L.length / 2; ++ i )
+        swap( L.data[i], L.data[L.length - 1 - i] );
+}
+
+// 2. 带头节点单链表
+
+struct Node {
+    int data;
+    Node *next;
+};
+
+Node* CreateLinkList( int n )
+{
+    Node *head = new Node( );
+    head-&gt;next = NULL;
+    Node *tail = head;
+    for( int i = 1; i &lt;= n; ++ i )
+    {
+        Node *cur = new Node( );
+        cin &gt;&gt; cur-&gt;data;
+        cur-&gt;next = NULL;
+        tail-&gt;next = cur;
+        tail = cur;
+    }
+    return head;
+}
+
+Node* Find( Node *head, int x )
+{
+    Node *cur = head;
+    while( cur-&gt;next != NULL &amp;&amp; cur-&gt;next-&gt;data != x ) cur = cur-&gt;next;
+    return cur;
+}
+
+void DeleteNode( Node *p ) // 删除 p 的后继
+{
+    if( p == NULL || p-&gt;next == NULL ) return;
+    Node *tar = p-&gt;next;
+    p-&gt;next = tar-&gt;next;
+    delete tar;
+}
+
+void ReverseLinkList( Node *head )
+{
+    Node *p = head-&gt;next;
+    head-&gt;next = NULL;
+    while( p != NULL )
+    {
+        Node *q = p-&gt;next;
+        p-&gt;next = head-&gt;next;
+        head-&gt;next = p;
+        p = q;
+    }
+}
+
+// 3. 循环单链表
+
+Node* CreateCircularList( int n )
+{
+    Node *head = ( Node * )malloc( sizeof( Node ) );
+    head-&gt;next = head;
+    Node *tail = head;
+    for( int i = 1; i &lt;= n; ++ i )
+    {
+        Node *cur = ( Node * )malloc( sizeof( Node ) );
+        cin &gt;&gt; cur-&gt;data;
+        cur-&gt;next = head;
+        tail-&gt;next = cur;
+        tail = cur;
+    }
+    return head;
+}
+
+// 4. 静态链表 (Static List)
+
+const int MAXSIZE = 100;
+
+struct SNode {
+    int data;
+    int cur;
+};
+
+void InitSList( SNode a[] )
+{
+    for( int i = 0; i &lt; MAXSIZE - 1; ++ i ) a[i].cur = i + 1;
+    a[MAXSIZE - 1].cur = 0;
+}
+
+int Alloc( SNode a[] )
+{
+    int p = a[0].cur;
+    if( p == 0 ) return -1;
+    a[0].cur = a[p].cur;
+    return p;
+}
+
+void Free( SNode a[], int k )
+{
+    a[k].cur = a[0].cur;
+    a[0].cur = k;
+}</pre>
+<p>
+    <br/>
+</p>
+<p>
+    
+		
+</p>

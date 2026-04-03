@@ -1,0 +1,965 @@
+1. 存储结构的选择
+
+顺序存储：核心在于利用数组的连续性实现高效访问。在栈中，通过 top 指针实现 O(1) 进出；在队列中，为解决循环队列的队满问题，利用取模运算 (rear + 1) % size 有效利用存储空间。
+
+链式存储：核心在于动态内存分配的灵活性。栈采用头插法简化操作；队列通过维护头尾双指针，统一了入队与出队的逻辑，避免了顺序存储带来的空间限制。
+
+2. 逻辑特性与变体
+
+栈的应用（LIFO）：重点在于处理具有“最近相关性”或“逆序性”的问题，比如说下一个更大的元素（NGE问题）。
+
+队列的应用（FIFO）：重点在于处理“顺序性”与“公平调度”问题。
+
+
+三、实验总结
+
+栈和队列本质上是逻辑受限的线性表，其实现场景（顺序或链式）应根据需求权衡。顺序结构适合规模明确的快速计算，链式结构适合动态变化的复杂业务。
+
+指针与内存管理：在链式栈和队列的 Pop 或 DeQueue 操作中，必须先暂存节点地址再移动指针，最后释放内存，否则会导致内存泄漏。
+
+边界条件：注意判定栈空（top == -1）、栈满、队空（front == rear）及循环队列的队满状态。
+
+表达式计算：需额外注意操作数栈在运算时的弹出顺序。
+
+
+<h3 data-pm-slice="1 1 []">
+    1. 顺序栈
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：创建一个支持初始化、入、出、取顶、销毁的顺序存储栈。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：分配连续数组空间，维护 <code>top</code> 指针（初始为 -1）。入栈前需检查是否溢出，出栈则移动指针。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+typedef int Elemtype;
+
+typedef struct {
+    Elemtype* base;
+    int size;
+    int top;
+} SqStack;
+
+void Push( SqStack *s, Elemtype x )
+{
+    s-&gt;top ++;
+    s-&gt;base[ s-&gt;top ] = x;
+}
+
+int Pop( SqStack *s, Elemtype *x )
+{
+    if( s-&gt;top == -1 ) return 0;
+    *x = s-&gt;base[s-&gt;top];
+    s-&gt;top --;
+    return 1;
+}
+
+int GetTop( SqStack s, Elemtype *x )
+{
+    if( s.top == -1 ) return 0;
+    *x = s.base[s.top];
+    return 1;
+}</pre>
+<h3>
+    2. 链栈
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：实现一个基于单链表的栈结构，动态分配内存。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：采用头插法入栈。入栈时新建节点指向当前头；出栈时移动头指针并释放旧节点。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+typedef int Elemtype;
+
+typedef struct LinkStack {
+    Elemtype data;
+    struct LinkStack *next;
+} LinkStack;
+
+LinkStack* Push( LinkStack* head, Elemtype x )
+{
+    LinkStack* p = (LinkStack*)malloc(sizeof(LinkStack));
+    p-&gt;data = x;
+    p-&gt;next = head;
+    return p;
+}
+
+int GetTop( LinkStack* head, Elemtype *x )
+{
+    if( head == NULL ) return 0;
+    *x = head-&gt;data;
+    return 1;
+}
+
+LinkStack* Pop( LinkStack* head )
+{
+    if( head == NULL ) {
+        printf(&quot;EMPTY\n&quot;);
+        return NULL;
+    }
+    printf(&quot;%d\n&quot;, head-&gt;data);
+    LinkStack* p = head;
+    head = head-&gt;next;
+    free( p );
+    return head;
+}
+
+
+LinkStack* InitStack( )
+{
+    return NULL;
+}</pre>
+<h3>
+    3. 顺序队列
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：实现一个基础的顺序存储队列。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：维护 <code>front</code> 和 <code>rear</code> 指针。入队在队尾 <code>rear</code> 处，出队在队头 <code>front</code> 处。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+typedef int Elemtype;
+
+typedef struct SqQueue {
+    Elemtype* data;
+    int size;
+    int front, rear;
+} SqQueue;
+
+int Empty( SqQueue *q )
+{
+    return q-&gt;front == q-&gt;rear;
+}
+
+void EnQueue( SqQueue* q, Elemtype x )
+{
+    q-&gt;data[ q-&gt;rear ] = x;
+    q-&gt;rear ++;
+}
+
+int Front( SqQueue* q )
+{
+    if( Empty(q) ) return -1;
+    return q-&gt;data[ q-&gt;front ];
+}
+
+int Back( SqQueue* q )
+{
+    if( Empty(q) ) return -1;
+    return q-&gt;data[ q-&gt;rear-1 ];
+}
+
+int DeQueue( SqQueue* q )
+{
+    int x = q-&gt;data[ q-&gt;front ];
+    q-&gt;front ++;
+    return x;
+}
+
+void InitQueue( SqQueue* q )
+{
+    q-&gt;size = 500;
+    q-&gt;data = ( Elemtype* )malloc( sizeof( Elemtype ) * (q-&gt;size) );
+    q-&gt;front = 0;
+    q-&gt;rear = 0;
+}</pre>
+<h3>
+    4. 链式队列
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：实现一个带头结点的链式队列，支持大容量数据。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：<code>front</code> 指向头结点，<code>tail</code> 指向末尾。入队操作挂在 <code>tail-&gt;next</code>；出队从 <code>front-&gt;next</code> 取值。
+        </p>
+    </li>
+</ul>
+<pre>#include&lt;stdlib.h&gt;
+#include&lt;stdio.h&gt;
+#include&lt;string.h&gt;
+
+typedef int Elemtype;
+
+typedef struct QNode {
+    Elemtype data;
+    struct QNode *next;
+} QNode;
+
+typedef struct {
+    QNode* front;
+    QNode* tail;
+} LinkQueue;
+
+int Empty( LinkQueue &amp;q )
+{
+    return q.front == q.tail;
+}
+
+void EnQueue( LinkQueue &amp;q, Elemtype x )
+{
+    QNode* p = (QNode*)malloc(sizeof(QNode));
+    p-&gt;data = x;
+    p-&gt;next = NULL;
+    q.tail-&gt;next = p;
+    q.tail = p;
+}
+
+int DeQueue( LinkQueue &amp;q )
+{
+    QNode* p = q.front-&gt;next;
+    int x = p-&gt;data;
+    q.front-&gt;next = p-&gt;next;
+    if( q.tail == p ) q.tail = q.front;
+    free( p );
+    return x;
+}
+
+int Front( LinkQueue &amp;q )
+{
+    return q.front-&gt;next-&gt;data;
+}
+
+int Back( LinkQueue &amp;q )
+{
+    return q.tail-&gt;data;
+}</pre>
+<h3>
+    5. 循环队列
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：通过模运算处理循环操作。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：判断队满条件为 <code>(rear + 1) % size == front</code>，计算长度使用 <code>(rear - front + size) % size</code>。
+        </p>
+    </li>
+</ul>
+<pre>#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;string.h&gt;
+
+typedef int Elemtype;
+
+typedef struct SqQueue {
+    Elemtype* base;
+    int front, rear;
+    int size;
+} SqQueue;
+
+void InitQueue( SqQueue *q )
+{
+    q-&gt;size = 5;
+    q-&gt;base = ( Elemtype* )malloc( sizeof( Elemtype ) * (q-&gt;size) );
+    q-&gt;front = 0;
+    q-&gt;rear = 0;
+}
+
+int EnQueue( SqQueue *q, Elemtype x )
+{
+    if( ( q-&gt;rear + 1 ) % q-&gt;size == q-&gt;front ) return 0;
+    q-&gt;base[ q-&gt;rear ] = x;
+    q-&gt;rear = ( q-&gt;rear + 1 ) % q-&gt;size;
+    return 1;
+}
+
+int DeQueue( SqQueue *q, Elemtype *x )
+{
+    if( q-&gt;front == q-&gt;rear ) return 0;
+    *x = q-&gt;base[ q-&gt;front ];
+    q-&gt;front = ( q-&gt;front + 1 ) % q-&gt;size;
+    return 1;
+}
+
+int Destroy( SqQueue *q )
+{
+    free(q-&gt;base);
+}
+
+int QueueLength( SqQueue q )
+{
+    return ( q.rear - q.front + q.size ) % q.size;
+}</pre>
+<h3>
+    --- 此后无限制题目均采用C++STL库完成---
+</h3>
+<h3>
+    6. 波兰表达式（前缀）
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：计算运算符在前、操作数在后的前缀表达式。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：从右向左扫描，遇数字入栈，遇运算符弹出栈顶两个数字运算后压回。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 2e5 + 5;
+
+void solve( )
+{
+    string str;
+    while( getline( cin, str ) )
+    {
+        if( str.empty( ) ) continue;
+       
+        stringstream ss( str );
+        vector&lt; string &gt; v;
+
+        string s;
+        while( ss &gt;&gt; s ) v.push_back( s );
+
+        stack&lt; double &gt; st;
+
+        for( int i = v.size( ) - 1; i &gt;= 0; -- i )
+        {
+            string t = v[i];
+            if( t == &quot;*&quot; || t == &quot;+&quot; || t == &quot;-&quot; || t == &quot;/&quot; )
+            {
+                double a = st.top( ); st.pop( );
+                double b = st.top( ); st.pop( );
+                if( t == &quot;*&quot; ) st.push( a * b );
+                else if( t == &quot;+&quot; ) st.push( a + b );
+                else if( t == &quot;-&quot; ) st.push( a - b );
+                else if( t == &quot;/&quot; ) st.push( a / b );
+            }
+            else 
+            {
+                st.push( stod( t ) );
+            }
+        }
+        if( !st.empty( ) ) cout &lt;&lt; fixed &lt;&lt; setprecision( 6 ) &lt;&lt; st.top( ) &lt;&lt; &#39;\n&#39;;
+
+    }
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}</pre>
+<h3>
+    7. 逆波兰表达式（后缀）
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：计算操作数在前、运算符在后的后缀表达式。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：从左向右扫描，操作逻辑同上。注意减法和除法时弹出元素的顺序。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 2e5 + 5;
+
+void solve( )
+{
+    string str;
+    while( getline( cin, str ) )
+    {
+        if( str.empty( ) ) continue;
+       
+        stringstream ss( str );
+        vector&lt; string &gt; v;
+
+        string s;
+        while( ss &gt;&gt; s ) v.push_back( s );
+
+        stack&lt; double &gt; st;
+
+        for( int i = 0; i &lt; v.size( ); ++ i )
+        {
+            string t = v[i];
+            if( t == &quot;*&quot; || t == &quot;+&quot; || t == &quot;-&quot; || t == &quot;/&quot; )
+            {
+                double a = st.top( ); st.pop( );
+                double b = st.top( ); st.pop( );
+                if( t == &quot;*&quot; ) st.push( b * a );
+                else if( t == &quot;+&quot; ) st.push( b + a );
+                else if( t == &quot;-&quot; ) st.push( b - a );
+                else if( t == &quot;/&quot; ) st.push( b / a );
+            }
+            else 
+            {
+                st.push( stod( t ) );
+            }
+        }
+        if( !st.empty( ) ) cout &lt;&lt; fixed &lt;&lt; setprecision( 2 ) &lt;&lt; st.top( ) &lt;&lt; &#39;\n&#39;;
+
+    }
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}</pre>
+<h3>
+    8. 表达式转换（中--&gt;后）
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：将中缀式转换为后缀式。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：利用运算符栈。根据优先级决定弹栈时机，括号处理需强制改变优先级边界。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 2e5 + 5;
+
+int get( char op )
+{
+    if( op == &#39;+&#39; || op == &#39;-&#39; ) return 1;
+    if( op == &#39;*&#39; || op == &#39;/&#39; ) return 2;
+    return 0;
+}
+
+void solve( )
+{
+    string s;
+    while( getline( cin, s ) )
+    {
+        if( s.empty( ) ) continue;
+        vector&lt; string &gt; res;
+        stack&lt; char &gt; ops;
+
+        for( int i = 0; i &lt; s.size( ); ++ i )
+        {
+            char c = s[i];
+            if( isdigit( c ) ) {
+                res.push_back( string( 1, c ) );
+            } else if( c == &#39;(&#39; ) {
+                ops.push( c );
+            } else if( c == &#39;)&#39; ) {
+                while( !ops.empty( ) &amp;&amp; ops.top( ) != &#39;(&#39; ) {
+                    res.push_back( string( 1, ops.top( ) ) );
+                    ops.pop( );
+                }
+                if( !ops.empty( ) ) ops.pop( );
+            } else {
+                while( !ops.empty( ) &amp;&amp; get( ops.top( ) ) &gt;= get( c ) ) {
+                    res.push_back( string( 1, ops.top( ) ) );
+                    ops.pop( );
+                }
+                ops.push( c );
+            }
+        }
+        while( !ops.empty( ) ) {
+            res.push_back( string( 1, ops.top( ) ) );
+            ops.pop( );
+        }
+        for( int i = 0; i &lt; res.size( ); ++ i )
+        {
+            if( i ) cout &lt;&lt; &quot; &quot;;
+            cout &lt;&lt; res[i];
+        }
+        cout &lt;&lt; &#39;\n&#39;;
+    }
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}</pre>
+<h3>
+    9. Hero In Maze
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：在给定迷宫地图中寻找起点到终点的可行路径。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：使用递归实现 DFS（深度优先搜索），利用系统栈记录回溯过程，配合访问标记数组。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int maxn = 20 + 5;
+
+int n, m, t;
+char maze[maxn][maxn];
+bool vis[maxn][maxn];
+bool found;
+
+int dx[] = {0, 0, 1, -1};
+int dy[] = {1, -1, 0, 0};
+
+bool check( int x, int y )
+{
+    return 1 &lt;= x &amp;&amp; x &lt;= m &amp;&amp; 1 &lt;= y &amp;&amp; y &lt;= n;
+}
+
+void dfs( int x, int y, int step )
+{
+    // cout &lt;&lt; x &lt;&lt; &#39; &#39; &lt;&lt; y &lt;&lt; &#39; &#39; &lt;&lt; step &lt;&lt; &#39;\n&#39;;
+    if( found || step &gt; t ) return ;
+
+    if( maze[x][y] == &#39;P&#39; ) { found = true; return; }
+
+    for( int d = 0; d &lt; 4; ++ d )
+    {
+        int nx = x + dx[d], ny = y + dy[d];
+
+        if( check( nx, ny ) &amp;&amp; !vis[nx][ny] &amp;&amp; maze[nx][ny] != &#39;*&#39; )
+        {
+            vis[nx][ny] = 1;
+            dfs(nx, ny, step + 1);
+            vis[nx][ny] = 0;
+        }
+    }
+}
+
+void solve( )
+{
+    if( !n &amp;&amp; !m &amp;&amp; !t ) return;
+
+    int stx = 1, sty = 1;
+    found = false;
+   
+    for( int i = 1; i &lt;= m; ++ i )
+    {
+        for( int j = 1; j &lt;= n; ++ j )
+        {
+            vis[i][j] = 0;
+            cin &gt;&gt; maze[i][j];
+            if( maze[i][j] == &#39;S&#39; ) stx = i, sty = j;
+        }
+    }
+
+    vis[stx][sty] = true;
+    dfs( stx, sty, 0 );
+
+    if( found ) cout &lt;&lt; &quot;YES&quot; &lt;&lt; &#39;\n&#39;;
+    else cout &lt;&lt; &quot;NO&quot; &lt;&lt; &#39;\n&#39;;
+}
+
+int main() {
+    ios::sync_with_stdio(0); cin.tie(0);
+    while( cin &gt;&gt; n &gt;&gt; m &gt;&gt; t ) solve( );
+    return 0;
+}</pre>
+<h3>
+    10. 括号匹配
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：按顺序输出字符串中每对合法括号的起始位置。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：遇到左括号入栈其下标，遇到右括号弹出栈顶下标，即为当前右括号对应的左括号位置。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 2e5 + 5;
+
+void solve( )
+{
+    string s;
+    cin &gt;&gt; s;
+    int len = s.length( );
+    stack&lt; int &gt; st;
+    for( int i = 0; i &lt; len; ++ i )
+    {
+        if( s[i] == &#39;(&#39; ) st.push( i );
+        else if( !st.empty( ) ) {
+            cout &lt;&lt; st.top( ) &lt;&lt; &quot; &quot; &lt;&lt; i &lt;&lt; &#39;\n&#39;;
+            st.pop( );
+        }
+    }
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}</pre>
+<h3>
+    11. 简单计算器
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：直接求解中缀表达式的值，无需显式转换为后缀。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：使用操作数栈和运算符栈。遇到低优先级符号时，先结算栈内高优先级运算。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 2e5 + 5;
+
+int get( string opt )
+{
+    if( opt == &quot;+&quot; || opt == &quot;-&quot; ) return 1;
+    if( opt == &quot;*&quot; || opt == &quot;/&quot; ) return 2;
+    return 0;
+}
+
+double calc( double a, double b, string opt )
+{
+    if( opt == &quot;+&quot; ) return a + b;
+    if( opt == &quot;-&quot; ) return a - b;
+    if( opt == &quot;*&quot; ) return a * b;
+    if( opt == &quot;/&quot; ) return a / b;
+    return 0;
+}
+
+void solve( )
+{
+    string str;
+    while( getline( cin, str ) )
+    {
+        if( str.length( ) == 1 &amp;&amp; str[0] == &#39;0&#39; ) break;
+        stringstream ss( str );
+        string cur;
+        stack&lt; double &gt; nums;
+        stack&lt; string &gt; ops;
+        while( ss &gt;&gt; cur )
+        {
+            if( isdigit( cur[0] ) ) nums.push( stod( cur ) );
+            else {
+                while( !ops.empty( ) &amp;&amp; get( ops.top( ) ) &gt;= get( cur ) )
+                {
+                    double b = nums.top( ); nums.pop( );
+                    double a = nums.top( ); nums.pop( );
+                    nums.push( calc( a, b, ops.top( ) ) );
+                    ops.pop( );
+                }
+                ops.push( cur );
+            }
+        }
+        while( !ops.empty( ) )
+        {
+            double b = nums.top( ); nums.pop( );
+            double a = nums.top( ); nums.pop( );
+            nums.push( calc( a, b, ops.top( ) ) );
+            ops.pop( );
+        }
+        cout &lt;&lt; fixed &lt;&lt; setprecision( 2 ) &lt;&lt; nums.top( ) &lt;&lt; &#39;\n&#39;;
+    }
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}</pre>
+<h3>
+    12. 栈之应用
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：验证一个出站序列是否可以通过一个中转栈实现。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：模拟入栈。如果当前栈顶元素与期望出站元素匹配，则持续弹栈，最后栈空则合法。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+   
+    int n;
+    while( cin &gt;&gt; n )
+    {
+        string s1, s2;
+        cin &gt;&gt; s1 &gt;&gt; s2;
+        int p2 = 0;
+
+        vector&lt; string &gt; ans;
+        stack&lt; char &gt; st;
+
+        for( int i = 0; i &lt; n; ++ i )
+        {
+            st.push( s1[i] );
+            ans.push_back(&quot;in&quot;);
+
+            while( !st.empty( ) &amp;&amp; st.top( ) == s2[p2] )
+            {
+                st.pop( );
+                ans.push_back(&quot;out&quot;);
+                p2++;
+            }
+        }
+
+        if( st.empty( ) )
+        {
+            cout &lt;&lt; &quot;Yes.&quot; &lt;&lt; &#39;\n&#39;;
+            for( int i = 0; i &lt; ans.size( ); i++ )
+            {
+                cout &lt;&lt; ans[i] &lt;&lt; &#39;\n&#39;;
+            }
+        }
+        else  cout &lt;&lt; &quot;No.&quot; &lt;&lt; &#39;\n&#39;;
+        cout &lt;&lt; &quot;FINISH&quot; &lt;&lt; &#39;\n&#39;;
+    }
+
+    return 0;
+}</pre>
+<h3>
+    13. 银行叫号排队系统
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：实现银行基础的排队取号与叫号逻辑。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：使用标准队列 FIFO 特性。1 操作入队，2 操作出队。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 2e5 + 5;
+
+void solve( )
+{
+    int opt;
+    int cnt = 0;
+    queue&lt; int &gt; q;
+    while( cin &gt;&gt; opt )
+    {
+        if( opt == 3 ) break;
+        if( opt == 1 )
+        {
+            cout &lt;&lt; &quot;A&quot; &lt;&lt; cnt &lt;&lt; &quot; &quot; &lt;&lt; q.size( ) &lt;&lt; &#39;\n&#39;;
+            q.push( cnt ++ );  
+        }
+        else 
+        {
+            if( q.empty( ) )
+            {
+                cout &lt;&lt; &quot;not exist&quot; &lt;&lt; &#39;\n&#39;;
+                continue;
+            }
+            cout &lt;&lt; &quot;A&quot; &lt;&lt; q.front( ) &lt;&lt; &#39;\n&#39;;
+            q.pop( );
+        }
+    }
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}</pre>
+<h3>
+    14. 银行业务队列简单模拟
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：模拟 A（快）、B（慢）两个窗口协作，A 处理速度是 B 的两倍。
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：根据编号奇偶分流到两个队列。主循环中 A 连续出队 2 次，B 出队 1 次。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 2e5 + 5;
+
+void solve( )
+{
+    queue&lt; int &gt; A, B;
+    int n;
+    cin &gt;&gt; n;
+    for( int i = 1; i &lt;= n; ++ i )
+    {
+        int x; cin &gt;&gt; x;
+        if( x &amp; 1 ) A.push( x );
+        else B.push( x );
+    }
+
+    vector&lt; int &gt; ans;
+    while( !A.empty( ) || !B.empty( ) )
+    {
+        if( !A.empty( ) )
+        {
+            ans.push_back( A.front( ) );
+            A.pop( );
+        }
+        if( !A.empty( ) )
+        {
+            ans.push_back( A.front( ) );
+            A.pop( );
+        }
+        if( !B.empty( ) )
+        {
+            ans.push_back( B.front( ) );
+            B.pop( );
+        }
+    }
+
+    bool first = 1;
+    for( int x : ans )
+    {
+        if( first ) first = 0;
+        else cout &lt;&lt; &quot; &quot;;
+        cout &lt;&lt; x;
+    }
+
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}</pre>
+<h3>
+    15. 机器翻译
+</h3>
+<ul class=" list-paddingleft-2">
+    <li>
+        <p>
+            <strong>思路</strong>：模拟，当内存时淘汰最先进入的数据。（ 类似双指针思路？ ）
+        </p>
+    </li>
+    <li>
+        <p>
+            <strong>要点</strong>：使用队列维护当前内存中的词条。若不存在且满员，则执行 <code>q.pop()</code> 弹出队首。
+        </p>
+    </li>
+</ul>
+<pre>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int maxn = 1000 + 5;
+int cnt[maxn];
+
+void solve( )
+{
+    int n, m;
+    cin &gt;&gt; m &gt;&gt; n;
+
+    int ans = 0;
+    queue&lt; int &gt; q;
+
+    for( int i = 1; i &lt;= n; ++ i )
+    {
+        int x; cin &gt;&gt; x;
+        if( cnt[x] ) continue;
+        ans ++;
+
+        if( q.size( ) &gt;= m )
+        {
+            cnt[q.front( )] --;
+            q.pop( );
+        }
+        q.push( x );
+        cnt[x] ++;
+    }
+    cout &lt;&lt; ans &lt;&lt; &#39;\n&#39;;
+}
+
+int main( )
+{
+    ios::sync_with_stdio( 0 ); cin.tie( 0 );
+    solve( );
+    return 0;
+}
+</pre>
